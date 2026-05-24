@@ -4,164 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Astrometrics Engine</title>
-    
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <style>
-        :root {
-            --bg: #0a0a0a;
-            --text: #e0e0e0;
-            --dim: #555555;
-            --alert: #ff3b30;
-        }
+        :root { --bg: #0a0a0a; --text: #e0e0e0; --dim: #555555; --alert: #ff3b30; }
+        * { box-sizing: border-box; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 400px; }
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid var(--dim); padding-bottom: 10px; }
+        .header h1 { font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; margin: 0; }
         
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            border-bottom: 1px solid var(--dim);
-            padding-bottom: 10px;
-        }
-
-        .header h1 {
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin: 0;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        input {
-            background: transparent;
-            border: 1px solid var(--dim);
-            color: var(--text);
-            padding: 15px;
-            font-family: inherit;
-            font-size: 1rem;
-            text-align: center;
-            text-transform: uppercase;
-            outline: none;
-            border-radius: 0;
-            -webkit-appearance: none;
-        }
-
-        input:focus {
-            border-color: var(--text);
-        }
-
-        button {
-            background: var(--text);
-            color: var(--bg);
-            border: none;
-            padding: 15px;
-            font-family: inherit;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: opacity 0.2s;
-            border-radius: 0;
-        }
-
-        button:active {
-            opacity: 0.8;
-        }
-
-        .hidden { 
-            display: none !important; 
-        }
-
-        #loading {
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--dim);
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink { 
-            50% { opacity: 0; } 
-        }
+        .input-group { display: flex; flex-direction: column; gap: 15px; }
+        input { background: transparent; border: 1px solid var(--dim); color: var(--text); padding: 15px; font-family: inherit; font-size: 1rem; text-align: center; text-transform: uppercase; outline: none; border-radius: 0; -webkit-appearance: none; color-scheme: dark; }
+        input:focus { border-color: var(--text); }
         
-        .profile-info {
-            font-size: 0.85rem;
-            margin-bottom: 30px;
-            color: var(--dim);
-            line-height: 1.5;
-        }
-
-        .color-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .color-card {
-            border: 1px solid var(--dim);
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .color-card.avoid {
-            border-color: var(--alert);
-        }
-
-        .color-swatch {
-            width: 100%;
-            height: 60px;
-            border-radius: 2px;
-        }
-
-        .color-label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .color-label.avoid {
-            color: var(--alert);
-        }
-
-        .color-name {
-            font-size: 0.7rem;
-            color: var(--dim);
-        }
-
-        #errorMsg {
-            color: var(--alert);
-            text-align: center;
-            font-size: 0.8rem;
-            margin-top: 10px;
-            height: 15px;
-        }
+        /* Specific styling for date/time placeholders */
+        input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+        
+        button { background: var(--text); color: var(--bg); border: none; padding: 15px; font-family: inherit; font-size: 1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: opacity 0.2s; border-radius: 0; }
+        button:active { opacity: 0.8; }
+        
+        .hidden { display: none !important; }
+        #loading { text-align: center; font-size: 0.9rem; color: var(--dim); animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        .profile-info { font-size: 0.85rem; margin-bottom: 30px; color: var(--dim); line-height: 1.5; text-align: center; }
+        .color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .color-card { border: 1px solid var(--dim); padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .color-card.avoid { border-color: var(--alert); }
+        .color-swatch { width: 100%; height: 60px; border-radius: 2px; }
+        .color-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .color-label.avoid { color: var(--alert); }
+        .color-name { font-size: 0.7rem; color: var(--dim); }
+        
+        #errorMsg { color: var(--alert); text-align: center; font-size: 0.8rem; margin-top: 10px; height: 15px; }
+        .subtitle { font-size: 0.75rem; color: var(--dim); text-align: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -172,8 +49,16 @@
 
         <div id="loginView" class="input-group">
             <input type="text" id="secretCode" placeholder="ENTER ACCESS KEY" autocomplete="off" autocorrect="off" autocapitalize="characters">
-            <button onclick="authenticate()">INITIALIZE</button>
+            <button onclick="authenticateCode()">VERIFY KEY</button>
             <div id="errorMsg"></div>
+        </div>
+
+        <div id="registrationView" class="input-group hidden">
+            <div class="subtitle">KEY ACCEPTED. INITIALIZE PROFILE.</div>
+            <input type="text" id="regName" placeholder="ENTER NAME">
+            <input type="date" id="regDob" placeholder="YYYY-MM-DD">
+            <input type="time" id="regTime" placeholder="HH:MM">
+            <button onclick="registerUser()">GENERATE PROFILE</button>
         </div>
 
         <div id="loadingView" class="hidden">
@@ -181,8 +66,7 @@
         </div>
 
         <div id="resultsView" class="hidden">
-            <div class="profile-info" id="profileData">
-                </div>
+            <div class="profile-info" id="profileData"></div>
             <div class="color-grid">
                 <div class="color-card">
                     <div class="color-label">WEALTH</div>
@@ -209,66 +93,86 @@
     </div>
 
     <script>
-        // Your Google Apps Script Web App Endpoint
         const API_URL = "https://script.google.com/macros/s/AKfycbwizA0KEdBEUElOQvWRjm0nf5EaUQ6XatIeBSUliTpqZiySOOCgFxBwUmY6D4iAz0T2/exec";
+        liff.init({ liffId: "2010179776-Fse302Ev" });
 
-        // Initialize LIFF (Replace with your actual LIFF ID when ready)
-        // liff.init({ liffId: "2010179776-Fse3O2Ev" });
+        let currentActiveCode = "";
 
-        async function authenticate() {
+        // STEP 1: Verify Code
+        async function authenticateCode() {
             const codeInput = document.getElementById('secretCode').value.trim().toUpperCase();
             const errorMsg = document.getElementById('errorMsg');
-            
-            if (!codeInput) {
-                errorMsg.innerText = "ACCESS KEY REQUIRED";
-                return;
-            }
+            if (!codeInput) { errorMsg.innerText = "ACCESS KEY REQUIRED"; return; }
 
-            // UI Transitions
             errorMsg.innerText = "";
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('loadingView').classList.remove('hidden');
+            switchView('loadingView');
 
             try {
-                // Fetch to Google Apps Script
-                // Using text/plain to bypass complex CORS preflight issues on GAS
                 const response = await fetch(API_URL, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "text/plain;charset=utf-8", 
-                    },
-                    body: JSON.stringify({ secretCode: codeInput })
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "login", secretCode: codeInput })
                 });
-
                 const data = await response.json();
 
-                if (data.error) {
-                    throw new Error(data.error);
+                if (data.error) throw new Error(data.error);
+
+                if (data.needsRegistration) {
+                    currentActiveCode = data.secretCode;
+                    switchView('registrationView');
+                } else if (data.success) {
+                    renderResults(data);
                 }
-
-                renderResults(data);
-
             } catch (error) {
-                // Revert UI on failure
-                document.getElementById('loadingView').classList.add('hidden');
-                document.getElementById('loginView').classList.remove('hidden');
+                switchView('loginView');
                 errorMsg.innerText = "ERR: " + error.message.toUpperCase();
             }
         }
 
-        function renderResults(data) {
-            document.getElementById('loadingView').classList.add('hidden');
-            document.getElementById('resultsView').classList.remove('hidden');
+        // STEP 2: Register New Profile
+        async function registerUser() {
+            const name = document.getElementById('regName').value.trim();
+            const dob = document.getElementById('regDob').value;
+            const time = document.getElementById('regTime').value;
 
+            if (!name || !dob || !time) {
+                alert("ALL FIELDS REQUIRED FOR ASTRONOMICAL ACCURACY");
+                return;
+            }
+
+            switchView('loadingView');
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "register", secretCode: currentActiveCode, name: name, dob: dob, time: time })
+                });
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+                renderResults(data);
+            } catch (error) {
+                switchView('registrationView');
+                alert("ERR: " + error.message.toUpperCase());
+            }
+        }
+
+        function switchView(viewId) {
+            ['loginView', 'registrationView', 'loadingView', 'resultsView'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function renderResults(data) {
+            switchView('resultsView');
             const dateStr = new Date().toLocaleDateString('en-GB');
-            
-            // Populate Header Data
             document.getElementById('profileData').innerHTML = 
                 `SUBJECT: ${data.name.toUpperCase()}<br>` +
                 `ASCENDANT: ${data.ascendant.toUpperCase()}<br>` +
                 `DATE: ${dateStr}`;
 
-            // Apply Hex Colors and Names
             applyColorBox('Wealth', data.colors.wealth);
             applyColorBox('Work', data.colors.work);
             applyColorBox('Charm', data.colors.charm);
