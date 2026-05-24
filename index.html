@@ -1,221 +1,666 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Astrometrics Engine</title>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Lucky Colors</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F5F2;
+  --surface: #FFFFFF;
+  --text: #1A1814;
+  --dim: #9A9690;
+  --border: rgba(26,24,20,0.1);
+  --gold: #B8965A;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0 0 40px;
+}
+.shell { width: 100%; max-width: 430px; }
 
-    <style>
-        :root {
-            --bg: #F4F5F7;
-            --surface: #ffffff;
-            --text: #1a1a1a;
-            --dim: #8E8E93;
-            --border: #E5E5EA;
-            --primary: #1a1a1a;
-        }
-        
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        
-        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+/* ── HEADER ── */
+.top-bar {
+  padding: 20px 20px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 0.5px solid var(--border);
+}
+.logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+.logo span { color: var(--gold); font-style: italic; }
+.top-meta { text-align: right; font-size: 12px; color: var(--dim); line-height: 1.5; }
 
-        .container { width: 100%; max-width: 500px; background: var(--surface); padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-top: 10px;}
+/* ── LOADING ── */
+#loadingView {
+  padding: 80px 20px;
+  text-align: center;
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 2px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--dim); }
 
-        .header { text-align: center; margin-bottom: 25px; }
-        .header h1 { font-size: 1.5rem; font-weight: 700; margin: 0; }
-        .subtitle { font-size: 0.9rem; color: var(--dim); margin-top: 5px; }
-        
-        .input-group { display: flex; flex-direction: column; gap: 15px; }
-        .input-wrapper { display: flex; flex-direction: column; gap: 5px; }
-        .input-label { font-size: 0.75rem; font-weight: 600; color: var(--dim); text-transform: uppercase; }
+/* ── AUTH VIEWS ── */
+.auth-wrap { padding: 32px 20px; }
+.auth-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.auth-sub { font-size: 14px; color: var(--dim); margin-bottom: 32px; line-height: 1.5; }
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+.field input {
+  width: 100%;
+  padding: 14px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+  color: var(--text);
+  -webkit-appearance: none;
+  transition: border-color 0.2s;
+}
+.field input:focus { border-color: var(--gold); }
+.btn-primary {
+  width: 100%;
+  padding: 16px;
+  background: var(--text);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s;
+}
+.btn-primary:active { opacity: 0.75; transform: scale(0.98); }
+.error-msg { color: #A83232; font-size: 13px; text-align: center; margin-top: 14px; line-height: 1.4; }
 
-        input { background: var(--surface); border: 1px solid var(--border); padding: 14px; font-size: 1rem; border-radius: 8px; outline: none; -webkit-appearance: none;}
-        input:focus { border-color: var(--primary); }
-        
-        button { background: var(--primary); color: #ffffff; border: none; padding: 16px; font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        button:active { transform: scale(0.98); }
-        
-        .hidden { display: none !important; }
-        #loading { text-align: center; font-weight: 500; color: var(--dim); padding: 40px 0; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+/* ── DASHBOARD ── */
+.dash { padding: 0 16px; }
 
-        /* The Grid Layout */
-        .forecast-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .forecast-table th { font-size: 0.75rem; color: var(--dim); padding-bottom: 15px; text-transform: uppercase; font-weight: 600; text-align: center; border-bottom: 1px solid var(--border); }
-        .forecast-table td { padding: 15px 0; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        .date-cell { font-weight: 600; font-size: 0.9rem; color: var(--text); }
-        
-        .color-dot {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        /* Custom Border for White dots so they don't vanish */
-        .color-dot[style*="background-color: #FFFFFF"] { border: 1px solid var(--border); }
-    </style>
+/* date nav */
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 4px;
+}
+.nav-arrow {
+  width: 36px; height: 36px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--dim);
+  transition: border-color 0.15s;
+  user-select: none;
+}
+.nav-arrow:active { transform: scale(0.94); border-color: var(--gold); }
+.date-center { text-align: center; }
+.date-day { font-family: 'DM Serif Display', serif; font-size: 20px; }
+.date-full { font-size: 12px; color: var(--dim); margin-top: 1px; }
+.date-offset { font-size: 11px; color: var(--gold); font-weight: 500; margin-top: 2px; letter-spacing: 0.05em; }
+
+/* main swatch */
+.main-swatch-wrap { margin-bottom: 12px; }
+.main-swatch {
+  width: 100%;
+  height: 110px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.4s ease;
+}
+.swatch-label {
+  position: absolute;
+  bottom: 14px; left: 16px; right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.swatch-name { font-family: 'DM Serif Display', serif; font-size: 22px; color: rgba(255,255,255,0.92); text-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+.swatch-hex { font-size: 11px; font-family: monospace; color: rgba(255,255,255,0.65); letter-spacing: 0.05em; }
+.swatch-role { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; padding-left: 2px; }
+
+/* grid */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.mini-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+}
+.mini-swatch {
+  width: 100%;
+  height: 48px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  transition: background 0.4s;
+}
+.mini-name { font-size: 13px; font-weight: 500; line-height: 1.3; }
+.mini-hex { font-size: 10px; color: var(--dim); font-family: monospace; }
+.avoid-card { background: #FAF4F4; }
+.avoid-card .mini-name { color: #A83232; }
+
+/* style row */
+.style-row {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.style-item-label { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); margin-bottom: 4px; }
+.style-item-val { font-size: 14px; font-weight: 500; }
+
+/* intention */
+.intention-card {
+  background: var(--text);
+  color: #fff;
+  border-radius: 14px;
+  padding: 18px 18px 16px;
+  margin-bottom: 10px;
+}
+.intention-label { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 8px; }
+.intention-text { font-family: 'DM Serif Display', serif; font-size: 17px; font-style: italic; line-height: 1.5; }
+
+/* reason */
+.reason-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.reason-label { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+.reason-text { font-size: 13px; color: #5A5650; line-height: 1.65; }
+
+/* moon bar */
+.moon-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+.moon-emoji { font-size: 18px; }
+.moon-info { flex: 1; }
+.moon-phase { font-size: 13px; font-weight: 500; }
+.moon-sign-text { font-size: 11px; color: var(--dim); }
+.ruler-pill {
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 0.5px solid var(--border);
+  border-radius: 20px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.hidden { display: none !important; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Astrometrics</h1>
-            <div id="mainSubtitle" class="subtitle">Initializing Secure Link...</div>
-        </div>
+<div class="shell">
 
-        <div id="loginView" class="input-group hidden">
-            <div class="input-wrapper">
-                <label class="input-label">Access Key</label>
-                <input type="text" id="secretCode" placeholder="Enter invite code" autocapitalize="characters">
-            </div>
-            <button onclick="authenticateCode()">Verify Key</button>
-            <div id="errorMsg" style="color: red; text-align: center; font-size: 0.85rem; margin-top: 10px;"></div>
-        </div>
+  <div class="top-bar">
+    <div class="logo">Lucky <span>Colors</span></div>
+    <div class="top-meta" id="topMeta">Initialising…</div>
+  </div>
 
-        <div id="registrationView" class="input-group hidden">
-            <div class="input-wrapper">
-                <label class="input-label">Date of Birth</label>
-                <input type="date" id="regDob">
-            </div>
-            <div class="input-wrapper">
-                <label class="input-label">Time of Birth</label>
-                <input type="time" id="regTime">
-            </div>
-            <button onclick="registerUser()">Link Profile & Generate</button>
-        </div>
+  <!-- LOADING -->
+  <div id="loadingView">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">Connecting…</div>
+  </div>
 
-        <div id="loadingView" class="hidden">
-            <div id="loading">Calculating Astrological Matrix...</div>
-        </div>
-
-        <div id="resultsView" class="hidden">
-            <table class="forecast-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Wealth</th>
-                        <th>Work</th>
-                        <th>Charm</th>
-                        <th>Avoid</th>
-                    </tr>
-                </thead>
-                <tbody id="forecastBody">
-                    </tbody>
-            </table>
-        </div>
+  <!-- CODE ENTRY -->
+  <div id="loginView" class="auth-wrap hidden">
+    <div class="auth-title">Enter your<br>invite code</div>
+    <div class="auth-sub">Your personalised style guide awaits. Enter the code you received to get started.</div>
+    <div class="field">
+      <label>Access Code</label>
+      <input type="text" id="secretCode" placeholder="e.g. VIP-2026" autocapitalize="characters" autocomplete="off">
     </div>
+    <button class="btn-primary" onclick="authenticateCode()">Continue →</button>
+    <div class="error-msg hidden" id="errorMsg"></div>
+  </div>
 
-    <script>
-        // UPDATE TO YOUR NEW WEB APP URL
-        const API_URL = "https://script.google.com/macros/s/AKfycbwizA0KEdBEUElOQvWRjm0nf5EaUQ6XatIeBSUliTpqZiySOOCgFxBwUmY6D4iAz0T2/exec";
-        
-        let currentActiveCode = "";
-        let lineDisplayName = "User"; // Default fallback
+  <!-- REGISTRATION -->
+  <div id="registrationView" class="auth-wrap hidden">
+    <div class="auth-title">One-time<br>setup</div>
+    <div class="auth-sub">We need your birth details to calculate your personal chart. This is saved once and never asked again.</div>
+    <div class="field">
+      <label>Date of Birth</label>
+      <input type="date" id="regDob">
+    </div>
+    <div class="field">
+      <label>Time of Birth</label>
+      <input type="time" id="regTime">
+    </div>
+    <button class="btn-primary" onclick="registerUser()">Generate My Chart →</button>
+    <div class="error-msg hidden" id="regErrorMsg"></div>
+  </div>
 
-        // STEP 1: INITIALIZE LINE & PULL NAME AUTOMATICALLY
-        async function initApp() {
-            await liff.init({ liffId: "2010179776-Fse302Ev" });
-            
-            if (!liff.isLoggedIn()) {
-                liff.login();
-                return;
-            }
+  <!-- DASHBOARD -->
+  <div id="dashView" class="hidden">
+    <div class="dash">
 
-            try {
-                const profile = await liff.getProfile();
-                lineDisplayName = profile.displayName; 
-                document.getElementById('mainSubtitle').innerText = "Welcome, " + lineDisplayName;
-                switchView('loginView');
-            } catch (err) {
-                document.getElementById('mainSubtitle').innerText = "LINE Integration Error";
-            }
-        }
+      <div class="date-nav">
+        <div class="nav-arrow" onclick="changeDay(-1)">‹</div>
+        <div class="date-center">
+          <div class="date-day" id="dayName">–</div>
+          <div class="date-full" id="dateStr">–</div>
+          <div class="date-offset" id="offsetLabel">TODAY</div>
+        </div>
+        <div class="nav-arrow" onclick="changeDay(1)">›</div>
+      </div>
 
-        // Boot App
-        initApp();
+      <div class="moon-bar">
+        <div class="moon-emoji" id="moonEmoji">🌕</div>
+        <div class="moon-info">
+          <div class="moon-phase" id="moonPhaseName">–</div>
+          <div class="moon-sign-text">Moon in <span id="moonSignText">–</span></div>
+        </div>
+        <div class="ruler-pill" id="rulerPill">–</div>
+      </div>
 
-        async function authenticateCode() {
-            const codeInput = document.getElementById('secretCode').value.trim().toUpperCase();
-            if (!codeInput) return;
+      <div class="main-swatch-wrap">
+        <div class="swatch-role">Main colour to wear</div>
+        <div class="main-swatch" id="mainSwatch">
+          <div class="swatch-label">
+            <span class="swatch-name" id="mainName">–</span>
+            <span class="swatch-hex" id="mainHex">–</span>
+          </div>
+        </div>
+      </div>
 
-            switchView('loadingView');
+      <div class="grid2">
+        <div class="mini-card">
+          <div class="swatch-role">Support 1</div>
+          <div class="mini-swatch" id="s1Swatch"></div>
+          <div class="mini-name" id="s1Name">–</div>
+          <div class="mini-hex" id="s1Hex">–</div>
+        </div>
+        <div class="mini-card">
+          <div class="swatch-role">Support 2</div>
+          <div class="mini-swatch" id="s2Swatch"></div>
+          <div class="mini-name" id="s2Name">–</div>
+          <div class="mini-hex" id="s2Hex">–</div>
+        </div>
+      </div>
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    // Send the LINE name directly in the background
-                    body: JSON.stringify({ action: "login", secretCode: codeInput, lineName: lineDisplayName }) 
-                });
-                const data = await response.json();
+      <div class="grid2">
+        <div class="mini-card">
+          <div class="swatch-role">Accent</div>
+          <div class="mini-swatch" id="accentSwatch"></div>
+          <div class="mini-name" id="accentName">–</div>
+          <div class="mini-hex" id="accentHex">–</div>
+        </div>
+        <div class="mini-card avoid-card">
+          <div class="swatch-role" style="color:#A83232;">Avoid</div>
+          <div class="mini-swatch" id="avoidSwatch" style="opacity:0.45;"></div>
+          <div class="mini-name" id="avoidName">–</div>
+        </div>
+      </div>
 
-                if (data.error) throw new Error(data.error);
+      <div class="style-row">
+        <div>
+          <div class="style-item-label">Outfit</div>
+          <div class="style-item-val" id="outfitVal">–</div>
+        </div>
+        <div>
+          <div class="style-item-label">Hair</div>
+          <div class="style-item-val" id="hairVal">–</div>
+        </div>
+      </div>
 
-                if (data.needsRegistration) {
-                    currentActiveCode = data.secretCode;
-                    document.getElementById('mainSubtitle').innerText = "Profile Setup for " + lineDisplayName;
-                    switchView('registrationView');
-                } else if (data.success) {
-                    renderForecast(data);
-                }
-            } catch (error) {
-                switchView('loginView');
-                document.getElementById('errorMsg').innerText = error.message;
-            }
-        }
+      <div class="intention-card">
+        <div class="intention-label">Today's intention</div>
+        <div class="intention-text" id="intentionText">–</div>
+      </div>
 
-        async function registerUser() {
-            const dob = document.getElementById('regDob').value;
-            const time = document.getElementById('regTime').value;
+      <div class="reason-card">
+        <div class="reason-label">Why today</div>
+        <div class="reason-text" id="reasonText">–</div>
+      </div>
 
-            if (!dob || !time) { alert("Please complete all fields."); return; }
-            switchView('loadingView');
+    </div>
+  </div>
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    // Send the LINE name directly in the background
-                    body: JSON.stringify({ action: "register", secretCode: currentActiveCode, lineName: lineDisplayName, dob: dob, time: time })
-                });
-                const data = await response.json();
+</div>
 
-                if (data.error) throw new Error(data.error);
-                renderForecast(data);
-            } catch (error) {
-                switchView('registrationView');
-                alert(error.message);
-            }
-        }
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwizA0KEdBEUElOQvWRjm0nf5EaUQ6XatIeBSUliTpqZiySOOCgFxBwUmY6D4iAz0T2/exec";
+const LIFF_ID = "2010179776-Fse302Ev";
 
-        function switchView(viewId) {
-            ['loginView', 'registrationView', 'loadingView', 'resultsView'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            document.getElementById(viewId).classList.remove('hidden');
-        }
+let lineUserId = "";
+let lineDisplayName = "User";
+let userAscendant = "";
+let dayOffset = 0;
+let currentActiveCode = "";
 
-        function renderForecast(data) {
-            document.getElementById('mainSubtitle').innerText = `${data.name} | Ascendant: ${data.ascendant}`;
-            switchView('resultsView');
-            
-            const tbody = document.getElementById('forecastBody');
-            tbody.innerHTML = ""; // Clear existing
+// ── INIT ────────────────────────────────────────────────────────────────────
+async function initApp() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
 
-            // Build the table rows for every day fetched
-            data.forecast.forEach(day => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="date-cell">${day.date}</td>
-                    <td><div class="color-dot" style="background-color: ${day.colors.wealth.hex};"></div></td>
-                    <td><div class="color-dot" style="background-color: ${day.colors.work.hex};"></div></td>
-                    <td><div class="color-dot" style="background-color: ${day.colors.charm.hex};"></div></td>
-                    <td><div class="color-dot" style="background-color: ${day.colors.bad_luck.hex};"></div></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-    </script>
+    const profile = await liff.getProfile();
+    lineUserId = profile.userId;
+    lineDisplayName = profile.displayName;
+    document.getElementById("topMeta").textContent = lineDisplayName;
+
+    setLoading("Checking your profile…");
+
+    // Auto-login: send lineUserId, skip code entry if known
+    const res = await apiFetch({ action: "autoLogin", lineUserId, lineName: lineDisplayName });
+
+    if (res.success) {
+      userAscendant = res.ascendant;
+      renderDay(0);
+      switchView("dashView");
+    } else if (res.needsCode) {
+      switchView("loginView");
+    } else {
+      showLoginError(res.error || "Something went wrong.");
+      switchView("loginView");
+    }
+  } catch (err) {
+    document.getElementById("topMeta").textContent = "Error";
+    setLoading("Could not connect. Please try again.");
+  }
+}
+
+// ── CODE AUTH ────────────────────────────────────────────────────────────────
+async function authenticateCode() {
+  const code = document.getElementById("secretCode").value.trim().toUpperCase();
+  if (!code) return;
+  hideError("errorMsg");
+  setLoading("Verifying code…");
+
+  try {
+    const res = await apiFetch({ action: "login", secretCode: code, lineUserId, lineName: lineDisplayName });
+    if (res.error) throw new Error(res.error);
+
+    if (res.needsRegistration) {
+      currentActiveCode = res.secretCode;
+      switchView("registrationView");
+    } else if (res.success) {
+      userAscendant = res.ascendant;
+      renderDay(0);
+      switchView("dashView");
+    }
+  } catch (err) {
+    switchView("loginView");
+    showError("errorMsg", err.message);
+  }
+}
+
+// ── REGISTER ─────────────────────────────────────────────────────────────────
+async function registerUser() {
+  const dob = document.getElementById("regDob").value;
+  const time = document.getElementById("regTime").value;
+  if (!dob || !time) { showError("regErrorMsg", "Please fill in both fields."); return; }
+  hideError("regErrorMsg");
+  setLoading("Calculating your birth chart…");
+
+  try {
+    const res = await apiFetch({ action: "register", secretCode: currentActiveCode, lineUserId, lineName: lineDisplayName, dob, time });
+    if (res.error) throw new Error(res.error);
+    userAscendant = res.ascendant;
+    renderDay(0);
+    switchView("dashView");
+  } catch (err) {
+    switchView("registrationView");
+    showError("regErrorMsg", err.message);
+  }
+}
+
+// ── API HELPER ────────────────────────────────────────────────────────────────
+async function apiFetch(body) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function switchView(id) {
+  ["loadingView","loginView","registrationView","dashView"].forEach(v =>
+    document.getElementById(v).classList.add("hidden")
+  );
+  document.getElementById(id).classList.remove("hidden");
+}
+function setLoading(msg) {
+  document.getElementById("loadingText").textContent = msg;
+  switchView("loadingView");
+}
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.remove("hidden");
+}
+function hideError(id) { document.getElementById(id).classList.add("hidden"); }
+function showLoginError(msg) { showError("errorMsg", msg); }
+
+// ── STYLE ENGINE ──────────────────────────────────────────────────────────────
+const ZODIAC = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+
+const THAI_DAY = {
+  0:{name:"Deep red",    hex:"#8B2020"},
+  1:{name:"Warm gold",   hex:"#C49A30"},
+  2:{name:"Rose pink",   hex:"#C4607A"},
+  3:{name:"Forest green",hex:"#3A6B35"},
+  4:{name:"Amber",       hex:"#B8722A"},
+  5:{name:"Cobalt blue", hex:"#1B4F96"},
+  6:{name:"Deep violet", hex:"#4A3070"},
+};
+
+const SUPPORTS = {
+  0:[{name:"Warm grey",hex:"#9A9690"},{name:"Ivory",hex:"#EDE8DF"}],
+  1:[{name:"Warm beige",hex:"#D4C5B0"},{name:"Stone",hex:"#B8A99A"}],
+  2:[{name:"Dusty rose",hex:"#C4909A"},{name:"Warm beige",hex:"#D4C5B0"}],
+  3:[{name:"Olive",hex:"#6B7A3A"},{name:"Stone",hex:"#B8A99A"}],
+  4:[{name:"Navy",hex:"#1C2C4A"},{name:"Camel",hex:"#C9A070"}],
+  5:[{name:"Deep navy",hex:"#1C2C4A"},{name:"Sage",hex:"#7A9E7E"}],
+  6:[{name:"Muted teal",hex:"#4A8A8C"},{name:"Ecru",hex:"#E8DFD0"}],
+};
+
+const ACCENTS = {
+  0:{name:"Cream",hex:"#EDE8DF"},
+  1:{name:"Slate blue",hex:"#4A6580"},
+  2:{name:"Bronze",hex:"#8B6914"},
+  3:{name:"Warm beige",hex:"#D4C5B0"},
+  4:{name:"Sage",hex:"#7A9E7E"},
+  5:{name:"Cream",hex:"#EDE8DF"},
+  6:{name:"Dark plum",hex:"#4A2D5A"},
+};
+
+const AVOID = {
+  0:{name:"Neon yellow",hex:"#DFFF00"},
+  1:{name:"Bright orange",hex:"#FF7A00"},
+  2:{name:"Hot pink",hex:"#FF1B8D"},
+  3:{name:"Fire red",hex:"#CC2222"},
+  4:{name:"Electric orange",hex:"#FF5500"},
+  5:{name:"Neon green",hex:"#39FF14"},
+  6:{name:"Bright red",hex:"#DD1111"},
+};
+
+const STYLES = {
+  0:["Structured & clean","Side-parted","Let your presence speak. Clarity commands respect."],
+  1:["Soft & tonal","Air-dried natural","Ease into the day. Gentle intention moves mountains."],
+  2:["Sharp & precise","Swept back","Move with intent. Mars energy rewards the bold."],
+  3:["Polished & light","Neat side part","Stay sharp, stay curious. Mercury rewards quick minds."],
+  4:["Confident & open","Voluminous natural","Think big, dress expansively. Jupiter opens doors."],
+  5:["Elegant & understated","Lightly textured","Your charm leads today. Let the clothes support, not compete."],
+  6:["Minimal & composed","Flat-back close-cut","Discipline is its own elegance. Saturn rewards restraint."],
+};
+
+const MOON_SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+const MOON_PHASES = [
+  {name:"New Moon",      e:"🌑", energy:"reset"},
+  {name:"Waxing crescent",e:"🌒",energy:"build"},
+  {name:"First quarter", e:"🌓", energy:"action"},
+  {name:"Waxing gibbous",e:"🌔", energy:"amplify"},
+  {name:"Full Moon",     e:"🌕", energy:"peak"},
+  {name:"Waning gibbous",e:"🌖", energy:"release"},
+  {name:"Last quarter",  e:"🌗", energy:"reflect"},
+  {name:"Waning crescent",e:"🌘",energy:"rest"},
+];
+
+function getMoonPhase(date) {
+  const known = new Date(2024,0,11);
+  const diff = (date-known)/86400000;
+  const cycle = ((diff%29.53)+29.53)%29.53;
+  const idx = Math.min(7, Math.floor(cycle/29.53*8));
+  return MOON_PHASES[idx];
+}
+
+function getMoonSign(date) {
+  const epoch = new Date(2000,0,6);
+  const diff = (date-epoch)/86400000;
+  const cycle = ((diff%27.32)+27.32)%27.32;
+  return MOON_SIGNS[Math.floor(cycle/27.32*12)%12];
+}
+
+const RULERS = ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"];
+
+const PHASE_REASONS = {
+  reset:"The New Moon invites fresh energy — dress simply, keep the slate clean.",
+  build:"The waxing moon amplifies intention. Layer with purpose.",
+  action:"First quarter demands decisiveness. Look balanced, act boldly.",
+  amplify:"The moon builds toward fullness — bold tonal dressing honours the energy.",
+  peak:"Full Moon heightens sensitivity. Calming tones keep the energy grounded.",
+  release:"Waning energy supports edited, minimal looks. Let go of excess.",
+  reflect:"Last quarter invites review. Earth tones support grounded reflection.",
+  rest:"The quiet before renewal. Dress for ease and comfort.",
+};
+
+function getAscendantNote(ascendant) {
+  const map = {
+    Cancer:"Your Cancer ascendant adds emotional intelligence to every look.",
+    Leo:"Leo rising wants to be seen — make your main colour count.",
+    Virgo:"Virgo rising favours precision — clean lines reward you today.",
+    Libra:"Libra ascendant brings natural grace to any ensemble.",
+    Scorpio:"Scorpio rising adds depth — darker tones feel instinctively right.",
+    Sagittarius:"Sagittarius rising invites bold, expansive choices.",
+    Capricorn:"Capricorn ascendant rewards structure and quality.",
+    Aquarius:"Aquarius rising brings originality — unexpected accents shine.",
+    Pisces:"Pisces ascendant flows with soft, dreamy palettes.",
+    Aries:"Aries rising moves fast — crisp, energetic dressing matches you.",
+    Taurus:"Taurus ascendant savours texture and quality over flash.",
+    Gemini:"Gemini rising keeps it versatile — layering is your strength.",
+  };
+  return map[ascendant] || "Your ascendant shapes the palette in subtle ways.";
+}
+
+function buildDayData(offset, ascendant) {
+  const d = new Date();
+  d.setHours(12,0,0,0);
+  d.setDate(d.getDate()+offset);
+
+  const dow = d.getDay();
+  const phase = getMoonPhase(d);
+  const moonSign = getMoonSign(d);
+  const ruler = RULERS[dow];
+
+  const main = THAI_DAY[dow];
+  const [s1, s2] = SUPPORTS[dow];
+  const accent = ACCENTS[dow];
+  const avoid = AVOID[dow];
+  const [outfit, hair, intention] = STYLES[dow];
+
+  const reason = `${PHASE_REASONS[phase.energy]} ${getAscendantNote(ascendant || "Cancer")} Day ruler ${ruler} sets the energetic tone.`;
+
+  return { date:d, dow, phase, moonSign, ruler, main, s1, s2, accent, avoid, outfit, hair, intention, reason };
+}
+
+function changeDay(dir) {
+  dayOffset += dir;
+  renderDay(dayOffset);
+}
+
+function renderDay(offset) {
+  const asc = userAscendant || "Cancer";
+  const data = buildDayData(offset, asc);
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+  document.getElementById("dayName").textContent = days[data.date.getDay()];
+  document.getElementById("dateStr").textContent = `${data.date.getDate()} ${months[data.date.getMonth()]} ${data.date.getFullYear()}`;
+  document.getElementById("offsetLabel").textContent = offset===0?"TODAY":offset===1?"TOMORROW":offset===-1?"YESTERDAY":(offset>0?"+":"")+offset+" DAYS";
+
+  document.getElementById("moonEmoji").textContent = data.phase.e;
+  document.getElementById("moonPhaseName").textContent = data.phase.name;
+  document.getElementById("moonSignText").textContent = data.moonSign;
+  document.getElementById("rulerPill").textContent = "Ruler: "+data.ruler;
+
+  document.getElementById("mainSwatch").style.background = data.main.hex;
+  document.getElementById("mainName").textContent = data.main.name;
+  document.getElementById("mainHex").textContent = data.main.hex;
+
+  document.getElementById("s1Swatch").style.background = data.s1.hex;
+  document.getElementById("s1Name").textContent = data.s1.name;
+  document.getElementById("s1Hex").textContent = data.s1.hex;
+
+  document.getElementById("s2Swatch").style.background = data.s2.hex;
+  document.getElementById("s2Name").textContent = data.s2.name;
+  document.getElementById("s2Hex").textContent = data.s2.hex;
+
+  document.getElementById("accentSwatch").style.background = data.accent.hex;
+  document.getElementById("accentName").textContent = data.accent.name;
+  document.getElementById("accentHex").textContent = data.accent.hex;
+
+  document.getElementById("avoidSwatch").style.background = data.avoid.hex;
+  document.getElementById("avoidName").textContent = data.avoid.name;
+
+  document.getElementById("outfitVal").textContent = data.outfit;
+  document.getElementById("hairVal").textContent = data.hair;
+  document.getElementById("intentionText").textContent = "\u201C"+data.intention+"\u201D";
+  document.getElementById("reasonText").textContent = data.reason;
+}
+
+initApp();
+</script>
 </body>
 </html>
