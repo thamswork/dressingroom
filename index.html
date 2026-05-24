@@ -378,34 +378,53 @@ let dayOffset = 0;
 let currentActiveCode = "";
 
 // ── INIT ────────────────────────────────────────────────────────────────────
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))
+  ]);
+}
+
 async function initApp() {
   try {
-    await liff.init({ liffId: LIFF_ID });
+    // 8-second timeout on LIFF init in case LINE SDK hangs
+    await withTimeout(liff.init({ liffId: LIFF_ID }), 8000);
+
     if (!liff.isLoggedIn()) { liff.login(); return; }
 
-    const profile = await liff.getProfile();
-    lineUserId = profile.userId;
+    const profile = await withTimeout(liff.getProfile(), 5000);
+    lineUserId      = profile.userId;
     lineDisplayName = profile.displayName;
     document.getElementById("topMeta").textContent = lineDisplayName;
 
     setLoading("Checking your profile…");
 
-    // Auto-login: send lineUserId, skip code entry if known
-    const res = await apiFetch({ action: "autoLogin", lineUserId, lineName: lineDisplayName });
+    // Auto-login: send lineUserId — falls back to code screen if not found
+    let res;
+    try {
+      res = await withTimeout(
+        apiFetch({ action: "autoLogin", lineUserId, lineName: lineDisplayName }),
+        10000
+      );
+    } catch (_) {
+      // GAS not redeployed yet or network issue — just show code entry
+      switchView("loginView");
+      return;
+    }
 
-    if (res.success) {
+    if (res && res.success) {
       userAscendant = res.ascendant;
       renderDay(0);
       switchView("dashView");
-    } else if (res.needsCode) {
-      switchView("loginView");
     } else {
-      showLoginError(res.error || "Something went wrong.");
+      // needsCode, unknown action from old GAS, or any error — show code screen
       switchView("loginView");
     }
+
   } catch (err) {
-    document.getElementById("topMeta").textContent = "Error";
-    setLoading("Could not connect. Please try again.");
+    // LIFF init failed (timeout, wrong LIFF ID, network) — still show login
+    document.getElementById("topMeta").textContent = lineDisplayName || "";
+    switchView("loginView");
   }
 }
 
@@ -456,12 +475,19 @@ async function registerUser() {
 
 // ── API HELPER ────────────────────────────────────────────────────────────────
 async function apiFetch(body) {
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(body)
-  });
-  return res.json();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ── UI HELPERS ────────────────────────────────────────────────────────────────
