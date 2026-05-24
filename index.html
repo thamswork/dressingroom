@@ -3,88 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Astrometrics Engine</title>
+    <title>Astrometrics</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <style>
-        :root { --bg: #0a0a0a; --text: #e0e0e0; --dim: #555555; --alert: #ff3b30; }
+        :root {
+            --bg: #f7f7f8;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --dim: #6b7280;
+            --border: #e5e7eb;
+            --primary: #1a1a1a;
+            --alert: #ef4444;
+        }
+        
         * { box-sizing: border-box; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 400px; }
-        .header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid var(--dim); padding-bottom: 10px; }
-        .header h1 { font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; margin: 0; }
         
-        .input-group { display: flex; flex-direction: column; gap: 15px; }
-        input { background: transparent; border: 1px solid var(--dim); color: var(--text); padding: 15px; font-family: inherit; font-size: 1rem; text-align: center; text-transform: uppercase; outline: none; border-radius: 0; -webkit-appearance: none; color-scheme: dark; }
-        input:focus { border-color: var(--text); }
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 400px; 
+            background: var(--surface);
+            padding: 30px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+        }
+
+        .header h1 { 
+            font-size: 1.4rem; 
+            font-weight: 700;
+            margin: 0; 
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle { 
+            font-size: 0.9rem; 
+            color: var(--dim); 
+            text-align: center; 
+            margin-top: 5px;
+            margin-bottom: 25px; 
+        }
         
-        /* Specific styling for date/time placeholders */
-        input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+        .input-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 16px; 
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input { 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            color: var(--text); 
+            padding: 14px 16px; 
+            font-family: inherit; 
+            font-size: 1rem; 
+            outline: none; 
+            border-radius: 8px; 
+            transition: border-color 0.2s;
+            -webkit-appearance: none;
+        }
+
+        input:focus { 
+            border-color: var(--primary); 
+        }
         
-        button { background: var(--text); color: var(--bg); border: none; padding: 15px; font-family: inherit; font-size: 1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: opacity 0.2s; border-radius: 0; }
-        button:active { opacity: 0.8; }
+        button { 
+            background: var(--primary); 
+            color: #ffffff; 
+            border: none; 
+            padding: 16px; 
+            font-family: inherit; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            margin-top: 10px;
+            transition: transform 0.1s, opacity 0.2s; 
+        }
+
+        button:active { 
+            transform: scale(0.98);
+            opacity: 0.9; 
+        }
         
         .hidden { display: none !important; }
-        #loading { text-align: center; font-size: 0.9rem; color: var(--dim); animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
         
-        .profile-info { font-size: 0.85rem; margin-bottom: 30px; color: var(--dim); line-height: 1.5; text-align: center; }
-        .color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .color-card { border: 1px solid var(--dim); padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .color-card.avoid { border-color: var(--alert); }
-        .color-swatch { width: 100%; height: 60px; border-radius: 2px; }
-        .color-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        #loading { 
+            text-align: center; 
+            font-weight: 500;
+            color: var(--dim); 
+            padding: 40px 0;
+            animation: pulse 1.5s infinite ease-in-out; 
+        }
+
+        @keyframes pulse { 
+            0%, 100% { opacity: 0.5; } 
+            50% { opacity: 1; }
+        }
+        
+        .profile-info { 
+            font-size: 0.9rem; 
+            margin-bottom: 25px; 
+            color: var(--dim); 
+            line-height: 1.6; 
+            text-align: center; 
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .profile-info strong {
+            color: var(--text);
+        }
+
+        .color-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+        }
+
+        .color-card { 
+            border: 1px solid var(--border); 
+            padding: 15px; 
+            border-radius: 12px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 12px; 
+            background: var(--surface);
+        }
+
+        .color-card.avoid { 
+            border-color: rgba(239, 68, 68, 0.3); 
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .color-swatch { 
+            width: 100%; 
+            height: 50px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .color-label { 
+            font-size: 0.75rem; 
+            font-weight: 700;
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            color: var(--dim);
+        }
+
         .color-label.avoid { color: var(--alert); }
-        .color-name { font-size: 0.7rem; color: var(--dim); }
-        
-        #errorMsg { color: var(--alert); text-align: center; font-size: 0.8rem; margin-top: 10px; height: 15px; }
-        .subtitle { font-size: 0.75rem; color: var(--dim); text-align: center; margin-bottom: 10px; }
+        .color-name { font-size: 0.85rem; font-weight: 500; color: var(--text); }
+        #errorMsg { color: var(--alert); text-align: center; font-size: 0.85rem; margin-top: 15px; min-height: 20px; font-weight: 500;}
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>SYS.ASTRO_ENGINE</h1>
+            <h1>Astrometrics</h1>
+            <div id="mainSubtitle" class="subtitle">Personalized Color Engine</div>
         </div>
 
         <div id="loginView" class="input-group">
-            <input type="text" id="secretCode" placeholder="ENTER ACCESS KEY" autocomplete="off" autocorrect="off" autocapitalize="characters">
-            <button onclick="authenticateCode()">VERIFY KEY</button>
+            <div class="input-wrapper">
+                <label class="input-label">Access Key</label>
+                <input type="text" id="secretCode" placeholder="Enter your invite code" autocomplete="off" autocorrect="off" autocapitalize="characters">
+            </div>
+            <button onclick="authenticateCode()">Verify Key</button>
             <div id="errorMsg"></div>
         </div>
 
         <div id="registrationView" class="input-group hidden">
-            <div class="subtitle">KEY ACCEPTED. INITIALIZE PROFILE.</div>
-            <input type="text" id="regName" placeholder="ENTER NAME">
-            <input type="date" id="regDob" placeholder="YYYY-MM-DD">
-            <input type="time" id="regTime" placeholder="HH:MM">
-            <button onclick="registerUser()">GENERATE PROFILE</button>
+            <div class="input-wrapper">
+                <label class="input-label">Full Name or Nickname</label>
+                <input type="text" id="regName" placeholder="e.g. Thyme">
+            </div>
+            <div class="input-wrapper">
+                <label class="input-label">Date of Birth</label>
+                <input type="date" id="regDob">
+            </div>
+            <div class="input-wrapper">
+                <label class="input-label">Time of Birth</label>
+                <input type="time" id="regTime">
+            </div>
+            <button onclick="registerUser()">Generate Profile</button>
         </div>
 
         <div id="loadingView" class="hidden">
-            <div id="loading">> QUERYING EPHEMERIS DATA...</div>
+            <div id="loading">Calculating Astrological Transits...</div>
         </div>
 
         <div id="resultsView" class="hidden">
             <div class="profile-info" id="profileData"></div>
             <div class="color-grid">
                 <div class="color-card">
-                    <div class="color-label">WEALTH</div>
+                    <div class="color-label">Wealth</div>
                     <div class="color-swatch" id="colorWealth"></div>
                     <div class="color-name" id="nameWealth">-</div>
                 </div>
                 <div class="color-card">
-                    <div class="color-label">WORK</div>
+                    <div class="color-label">Work</div>
                     <div class="color-swatch" id="colorWork"></div>
                     <div class="color-name" id="nameWork">-</div>
                 </div>
                 <div class="color-card">
-                    <div class="color-label">CHARM</div>
+                    <div class="color-label">Charm</div>
                     <div class="color-swatch" id="colorCharm"></div>
                     <div class="color-name" id="nameCharm">-</div>
                 </div>
                 <div class="color-card avoid">
-                    <div class="color-label avoid">AVOID</div>
+                    <div class="color-label avoid">Avoid</div>
                     <div class="color-swatch" id="colorBad"></div>
                     <div class="color-name" id="nameBad">-</div>
                 </div>
@@ -93,16 +253,16 @@
     </div>
 
     <script>
+        // REPLACE THIS URL IF YOUR NEW DEPLOYMENT GENERATED A NEW ONE
         const API_URL = "https://script.google.com/macros/s/AKfycbwizA0KEdBEUElOQvWRjm0nf5EaUQ6XatIeBSUliTpqZiySOOCgFxBwUmY6D4iAz0T2/exec";
         liff.init({ liffId: "2010179776-Fse302Ev" });
 
         let currentActiveCode = "";
 
-        // STEP 1: Verify Code
         async function authenticateCode() {
             const codeInput = document.getElementById('secretCode').value.trim().toUpperCase();
             const errorMsg = document.getElementById('errorMsg');
-            if (!codeInput) { errorMsg.innerText = "ACCESS KEY REQUIRED"; return; }
+            if (!codeInput) { errorMsg.innerText = "Please enter an access key."; return; }
 
             errorMsg.innerText = "";
             switchView('loadingView');
@@ -119,24 +279,24 @@
 
                 if (data.needsRegistration) {
                     currentActiveCode = data.secretCode;
+                    document.getElementById('mainSubtitle').innerText = "Profile Setup";
                     switchView('registrationView');
                 } else if (data.success) {
                     renderResults(data);
                 }
             } catch (error) {
                 switchView('loginView');
-                errorMsg.innerText = "ERR: " + error.message.toUpperCase();
+                errorMsg.innerText = error.message;
             }
         }
 
-        // STEP 2: Register New Profile
         async function registerUser() {
             const name = document.getElementById('regName').value.trim();
             const dob = document.getElementById('regDob').value;
             const time = document.getElementById('regTime').value;
 
             if (!name || !dob || !time) {
-                alert("ALL FIELDS REQUIRED FOR ASTRONOMICAL ACCURACY");
+                alert("Please fill out all fields.");
                 return;
             }
 
@@ -154,7 +314,7 @@
                 renderResults(data);
             } catch (error) {
                 switchView('registrationView');
-                alert("ERR: " + error.message.toUpperCase());
+                alert(error.message);
             }
         }
 
@@ -166,12 +326,13 @@
         }
 
         function renderResults(data) {
+            document.getElementById('mainSubtitle').innerText = "Today's Favorable Elements";
             switchView('resultsView');
             const dateStr = new Date().toLocaleDateString('en-GB');
             document.getElementById('profileData').innerHTML = 
-                `SUBJECT: ${data.name.toUpperCase()}<br>` +
-                `ASCENDANT: ${data.ascendant.toUpperCase()}<br>` +
-                `DATE: ${dateStr}`;
+                `<strong>Subject:</strong> ${data.name}<br>` +
+                `<strong>Ascendant:</strong> ${data.ascendant}<br>` +
+                `<strong>Date:</strong> ${dateStr}`;
 
             applyColorBox('Wealth', data.colors.wealth);
             applyColorBox('Work', data.colors.work);
@@ -182,7 +343,7 @@
         function applyColorBox(type, colorData) {
             if(colorData) {
                 document.getElementById('color' + type).style.backgroundColor = colorData.hex;
-                document.getElementById('name' + type).innerText = colorData.name.toUpperCase();
+                document.getElementById('name' + type).innerText = colorData.name;
             }
         }
     </script>
