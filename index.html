@@ -3,213 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Astrometrics</title>
+    <title>Astrometrics Engine</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
     <style>
         :root {
-            --bg: #f7f7f8;
+            --bg: #F4F5F7;
             --surface: #ffffff;
             --text: #1a1a1a;
-            --dim: #6b7280;
-            --border: #e5e7eb;
+            --dim: #8E8E93;
+            --border: #E5E5EA;
             --primary: #1a1a1a;
-            --alert: #ef4444;
         }
         
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         
-        body { 
-            background-color: var(--bg); 
-            color: var(--text); 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            min-height: 100vh; 
-        }
+        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
 
-        .container { 
-            width: 100%; 
-            max-width: 400px; 
-            background: var(--surface);
-            padding: 30px 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        }
+        .container { width: 100%; max-width: 500px; background: var(--surface); padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-top: 10px;}
 
-        .header { 
-            text-align: center; 
-            margin-bottom: 30px; 
-        }
-
-        .header h1 { 
-            font-size: 1.4rem; 
-            font-weight: 700;
-            margin: 0; 
-            letter-spacing: -0.5px;
-        }
-
-        .subtitle { 
-            font-size: 0.9rem; 
-            color: var(--dim); 
-            text-align: center; 
-            margin-top: 5px;
-            margin-bottom: 25px; 
-        }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+        .subtitle { font-size: 0.9rem; color: var(--dim); margin-top: 5px; }
         
-        .input-group { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 16px; 
-        }
+        .input-group { display: flex; flex-direction: column; gap: 15px; }
+        .input-wrapper { display: flex; flex-direction: column; gap: 5px; }
+        .input-label { font-size: 0.75rem; font-weight: 600; color: var(--dim); text-transform: uppercase; }
 
-        .input-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .input-label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--dim);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input { 
-            background: var(--surface); 
-            border: 1px solid var(--border); 
-            color: var(--text); 
-            padding: 14px 16px; 
-            font-family: inherit; 
-            font-size: 1rem; 
-            outline: none; 
-            border-radius: 8px; 
-            transition: border-color 0.2s;
-            -webkit-appearance: none;
-        }
-
-        input:focus { 
-            border-color: var(--primary); 
-        }
+        input { background: var(--surface); border: 1px solid var(--border); padding: 14px; font-size: 1rem; border-radius: 8px; outline: none; -webkit-appearance: none;}
+        input:focus { border-color: var(--primary); }
         
-        button { 
-            background: var(--primary); 
-            color: #ffffff; 
-            border: none; 
-            padding: 16px; 
-            font-family: inherit; 
-            font-size: 1rem; 
-            font-weight: 600; 
-            cursor: pointer; 
-            border-radius: 8px; 
-            margin-top: 10px;
-            transition: transform 0.1s, opacity 0.2s; 
-        }
-
-        button:active { 
-            transform: scale(0.98);
-            opacity: 0.9; 
-        }
+        button { background: var(--primary); color: #ffffff; border: none; padding: 16px; font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        button:active { transform: scale(0.98); }
         
         .hidden { display: none !important; }
+        #loading { text-align: center; font-weight: 500; color: var(--dim); padding: 40px 0; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        /* The Grid Layout */
+        .forecast-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .forecast-table th { font-size: 0.75rem; color: var(--dim); padding-bottom: 15px; text-transform: uppercase; font-weight: 600; text-align: center; border-bottom: 1px solid var(--border); }
+        .forecast-table td { padding: 15px 0; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .date-cell { font-weight: 600; font-size: 0.9rem; color: var(--text); }
         
-        #loading { 
-            text-align: center; 
-            font-weight: 500;
-            color: var(--dim); 
-            padding: 40px 0;
-            animation: pulse 1.5s infinite ease-in-out; 
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        @keyframes pulse { 
-            0%, 100% { opacity: 0.5; } 
-            50% { opacity: 1; }
-        }
-        
-        .profile-info { 
-            font-size: 0.9rem; 
-            margin-bottom: 25px; 
-            color: var(--dim); 
-            line-height: 1.6; 
-            text-align: center; 
-            background: var(--bg);
-            padding: 15px;
-            border-radius: 8px;
-        }
-
-        .profile-info strong {
-            color: var(--text);
-        }
-
-        .color-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
-        }
-
-        .color-card { 
-            border: 1px solid var(--border); 
-            padding: 15px; 
-            border-radius: 12px;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 12px; 
-            background: var(--surface);
-        }
-
-        .color-card.avoid { 
-            border-color: rgba(239, 68, 68, 0.3); 
-            background: rgba(239, 68, 68, 0.05);
-        }
-
-        .color-swatch { 
-            width: 100%; 
-            height: 50px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .color-label { 
-            font-size: 0.75rem; 
-            font-weight: 700;
-            text-transform: uppercase; 
-            letter-spacing: 0.5px;
-            color: var(--dim);
-        }
-
-        .color-label.avoid { color: var(--alert); }
-        .color-name { font-size: 0.85rem; font-weight: 500; color: var(--text); }
-        #errorMsg { color: var(--alert); text-align: center; font-size: 0.85rem; margin-top: 15px; min-height: 20px; font-weight: 500;}
+        /* Custom Border for White dots so they don't vanish */
+        .color-dot[style*="background-color: #FFFFFF"] { border: 1px solid var(--border); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Astrometrics</h1>
-            <div id="mainSubtitle" class="subtitle">Personalized Color Engine</div>
+            <div id="mainSubtitle" class="subtitle">Initializing Secure Link...</div>
         </div>
 
-        <div id="loginView" class="input-group">
+        <div id="loginView" class="input-group hidden">
             <div class="input-wrapper">
                 <label class="input-label">Access Key</label>
-                <input type="text" id="secretCode" placeholder="Enter your invite code" autocomplete="off" autocorrect="off" autocapitalize="characters">
+                <input type="text" id="secretCode" placeholder="Enter invite code" autocapitalize="characters">
             </div>
             <button onclick="authenticateCode()">Verify Key</button>
-            <div id="errorMsg"></div>
+            <div id="errorMsg" style="color: red; text-align: center; font-size: 0.85rem; margin-top: 10px;"></div>
         </div>
 
         <div id="registrationView" class="input-group hidden">
-            <div class="input-wrapper">
-                <label class="input-label">Full Name or Nickname</label>
-                <input type="text" id="regName" placeholder="e.g. Thyme">
-            </div>
             <div class="input-wrapper">
                 <label class="input-label">Date of Birth</label>
                 <input type="date" id="regDob">
@@ -218,60 +82,71 @@
                 <label class="input-label">Time of Birth</label>
                 <input type="time" id="regTime">
             </div>
-            <button onclick="registerUser()">Generate Profile</button>
+            <button onclick="registerUser()">Link Profile & Generate</button>
         </div>
 
         <div id="loadingView" class="hidden">
-            <div id="loading">Calculating Astrological Transits...</div>
+            <div id="loading">Calculating Astrological Matrix...</div>
         </div>
 
         <div id="resultsView" class="hidden">
-            <div class="profile-info" id="profileData"></div>
-            <div class="color-grid">
-                <div class="color-card">
-                    <div class="color-label">Wealth</div>
-                    <div class="color-swatch" id="colorWealth"></div>
-                    <div class="color-name" id="nameWealth">-</div>
-                </div>
-                <div class="color-card">
-                    <div class="color-label">Work</div>
-                    <div class="color-swatch" id="colorWork"></div>
-                    <div class="color-name" id="nameWork">-</div>
-                </div>
-                <div class="color-card">
-                    <div class="color-label">Charm</div>
-                    <div class="color-swatch" id="colorCharm"></div>
-                    <div class="color-name" id="nameCharm">-</div>
-                </div>
-                <div class="color-card avoid">
-                    <div class="color-label avoid">Avoid</div>
-                    <div class="color-swatch" id="colorBad"></div>
-                    <div class="color-name" id="nameBad">-</div>
-                </div>
-            </div>
+            <table class="forecast-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Wealth</th>
+                        <th>Work</th>
+                        <th>Charm</th>
+                        <th>Avoid</th>
+                    </tr>
+                </thead>
+                <tbody id="forecastBody">
+                    </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        // REPLACE THIS URL IF YOUR NEW DEPLOYMENT GENERATED A NEW ONE
+        // UPDATE TO YOUR NEW WEB APP URL
         const API_URL = "https://script.google.com/macros/s/AKfycbwizA0KEdBEUElOQvWRjm0nf5EaUQ6XatIeBSUliTpqZiySOOCgFxBwUmY6D4iAz0T2/exec";
-        liff.init({ liffId: "2010179776-Fse302Ev" });
-
+        
         let currentActiveCode = "";
+        let lineDisplayName = "User"; // Default fallback
+
+        // STEP 1: INITIALIZE LINE & PULL NAME AUTOMATICALLY
+        async function initApp() {
+            await liff.init({ liffId: "2010179776-Fse302Ev" });
+            
+            if (!liff.isLoggedIn()) {
+                liff.login();
+                return;
+            }
+
+            try {
+                const profile = await liff.getProfile();
+                lineDisplayName = profile.displayName; 
+                document.getElementById('mainSubtitle').innerText = "Welcome, " + lineDisplayName;
+                switchView('loginView');
+            } catch (err) {
+                document.getElementById('mainSubtitle').innerText = "LINE Integration Error";
+            }
+        }
+
+        // Boot App
+        initApp();
 
         async function authenticateCode() {
             const codeInput = document.getElementById('secretCode').value.trim().toUpperCase();
-            const errorMsg = document.getElementById('errorMsg');
-            if (!codeInput) { errorMsg.innerText = "Please enter an access key."; return; }
+            if (!codeInput) return;
 
-            errorMsg.innerText = "";
             switchView('loadingView');
 
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action: "login", secretCode: codeInput })
+                    // Send the LINE name directly in the background
+                    body: JSON.stringify({ action: "login", secretCode: codeInput, lineName: lineDisplayName }) 
                 });
                 const data = await response.json();
 
@@ -279,39 +154,35 @@
 
                 if (data.needsRegistration) {
                     currentActiveCode = data.secretCode;
-                    document.getElementById('mainSubtitle').innerText = "Profile Setup";
+                    document.getElementById('mainSubtitle').innerText = "Profile Setup for " + lineDisplayName;
                     switchView('registrationView');
                 } else if (data.success) {
-                    renderResults(data);
+                    renderForecast(data);
                 }
             } catch (error) {
                 switchView('loginView');
-                errorMsg.innerText = error.message;
+                document.getElementById('errorMsg').innerText = error.message;
             }
         }
 
         async function registerUser() {
-            const name = document.getElementById('regName').value.trim();
             const dob = document.getElementById('regDob').value;
             const time = document.getElementById('regTime').value;
 
-            if (!name || !dob || !time) {
-                alert("Please fill out all fields.");
-                return;
-            }
-
+            if (!dob || !time) { alert("Please complete all fields."); return; }
             switchView('loadingView');
 
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action: "register", secretCode: currentActiveCode, name: name, dob: dob, time: time })
+                    // Send the LINE name directly in the background
+                    body: JSON.stringify({ action: "register", secretCode: currentActiveCode, lineName: lineDisplayName, dob: dob, time: time })
                 });
                 const data = await response.json();
 
                 if (data.error) throw new Error(data.error);
-                renderResults(data);
+                renderForecast(data);
             } catch (error) {
                 switchView('registrationView');
                 alert(error.message);
@@ -325,26 +196,25 @@
             document.getElementById(viewId).classList.remove('hidden');
         }
 
-        function renderResults(data) {
-            document.getElementById('mainSubtitle').innerText = "Today's Favorable Elements";
+        function renderForecast(data) {
+            document.getElementById('mainSubtitle').innerText = `${data.name} | Ascendant: ${data.ascendant}`;
             switchView('resultsView');
-            const dateStr = new Date().toLocaleDateString('en-GB');
-            document.getElementById('profileData').innerHTML = 
-                `<strong>Subject:</strong> ${data.name}<br>` +
-                `<strong>Ascendant:</strong> ${data.ascendant}<br>` +
-                `<strong>Date:</strong> ${dateStr}`;
+            
+            const tbody = document.getElementById('forecastBody');
+            tbody.innerHTML = ""; // Clear existing
 
-            applyColorBox('Wealth', data.colors.wealth);
-            applyColorBox('Work', data.colors.work);
-            applyColorBox('Charm', data.colors.charm);
-            applyColorBox('Bad', data.colors.bad_luck);
-        }
-
-        function applyColorBox(type, colorData) {
-            if(colorData) {
-                document.getElementById('color' + type).style.backgroundColor = colorData.hex;
-                document.getElementById('name' + type).innerText = colorData.name;
-            }
+            // Build the table rows for every day fetched
+            data.forecast.forEach(day => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="date-cell">${day.date}</td>
+                    <td><div class="color-dot" style="background-color: ${day.colors.wealth.hex};"></div></td>
+                    <td><div class="color-dot" style="background-color: ${day.colors.work.hex};"></div></td>
+                    <td><div class="color-dot" style="background-color: ${day.colors.charm.hex};"></div></td>
+                    <td><div class="color-dot" style="background-color: ${day.colors.bad_luck.hex};"></div></td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
     </script>
 </body>
