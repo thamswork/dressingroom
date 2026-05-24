@@ -213,7 +213,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbwizA0KEdBEUElOQvWRjm0nf5EaUQ6XatIeBSUliTpqZiySOOCgFxBwUmY6D4iAz0T2/exec";
 
         // Initialize LIFF (Replace with your actual LIFF ID when ready)
-        // liff.init({ liffId: "YOUR_LIFF_ID_HERE" });
+        // liff.init({ liffId: "2010179776-Fse3O2Ev" });
 
         async function authenticate() {
             const codeInput = document.getElementById('secretCode').value.trim().toUpperCase();
