@@ -73,20 +73,24 @@ body {
 .auth-sub { font-size: 14px; color: var(--dim); margin-bottom: 32px; line-height: 1.5; }
 .field { margin-bottom: 18px; }
 .field label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
-.field input {
+.field input, .dob-select {
   width: 100%;
-  padding: 14px 16px;
+  padding: 15px 16px;
   font-family: 'DM Sans', sans-serif;
   font-size: 16px;
   background: var(--surface);
-  border: 0.5px solid var(--border);
+  border: 1px solid rgba(26,24,20,0.15);
   border-radius: 12px;
   outline: none;
   color: var(--text);
   -webkit-appearance: none;
+  appearance: none;
   transition: border-color 0.2s;
+  min-height: 52px;
 }
-.field input:focus { border-color: var(--gold); }
+.field input:focus, .dob-select:focus { border-color: var(--gold); border-width: 1.5px; }
+.dob-row { display: flex; gap: 8px; }
+.dob-row .dob-select { flex: 1; text-align: center; background-image: none; }
 .btn-primary {
   width: 100%;
   padding: 16px;
@@ -269,11 +273,18 @@ body {
     <div class="auth-sub">We need your birth details to calculate your personal chart. This is saved once and never asked again.</div>
     <div class="field">
       <label>Date of Birth</label>
-      <input type="date" id="regDob">
+      <div class="dob-row">
+        <select id="dobDay" class="dob-select"><option value="">Day</option></select>
+        <select id="dobMonth" class="dob-select"><option value="">Month</option></select>
+        <select id="dobYear" class="dob-select"><option value="">Year</option></select>
+      </div>
     </div>
     <div class="field">
       <label>Time of Birth</label>
-      <input type="time" id="regTime">
+      <div class="dob-row">
+        <select id="birthHour" class="dob-select"><option value="">HH</option></select>
+        <select id="birthMin" class="dob-select"><option value="">MM</option></select>
+      </div>
     </div>
     <button class="btn-primary" onclick="registerUser()">Generate My Chart →</button>
     <div class="error-msg hidden" id="regErrorMsg"></div>
@@ -455,9 +466,21 @@ async function authenticateCode() {
 
 // ── REGISTER ─────────────────────────────────────────────────────────────────
 async function registerUser() {
-  const dob = document.getElementById("regDob").value;
-  const time = document.getElementById("regTime").value;
-  if (!dob || !time) { showError("regErrorMsg", "Please fill in both fields."); return; }
+  const day   = document.getElementById("dobDay").value;
+  const month = document.getElementById("dobMonth").value;
+  const year  = document.getElementById("dobYear").value;
+  const hour  = document.getElementById("birthHour").value;
+  const min   = document.getElementById("birthMin").value;
+
+  if (!day || !month || !year || !hour || !min) {
+    showError("regErrorMsg", "Please fill in all fields.");
+    return;
+  }
+
+  // Build ISO strings — always Gregorian, no Buddhist Era ambiguity
+  const dob  = year + "-" + month.padStart(2,"0") + "-" + day.padStart(2,"0");
+  const time = hour.padStart(2,"0") + ":" + min.padStart(2,"0");
+
   hideError("regErrorMsg");
   setLoading("Calculating your birth chart…");
 
@@ -685,6 +708,44 @@ function renderDay(offset) {
   document.getElementById("intentionText").textContent = "\u201C"+data.intention+"\u201D";
   document.getElementById("reasonText").textContent = data.reason;
 }
+
+// Populate DOB selects
+(function() {
+  const dayEl   = document.getElementById("dobDay");
+  const monthEl = document.getElementById("dobMonth");
+  const yearEl  = document.getElementById("dobYear");
+  const hourEl  = document.getElementById("birthHour");
+  const minEl   = document.getElementById("birthMin");
+  if (!dayEl) return;
+
+  for (let d = 1; d <= 31; d++) {
+    const o = document.createElement("option");
+    o.value = d; o.textContent = d;
+    dayEl.appendChild(o);
+  }
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  months.forEach((m, i) => {
+    const o = document.createElement("option");
+    o.value = i + 1; o.textContent = m;
+    monthEl.appendChild(o);
+  });
+  const curYear = new Date().getFullYear();
+  for (let y = curYear; y >= 1940; y--) {
+    const o = document.createElement("option");
+    o.value = y; o.textContent = y;
+    yearEl.appendChild(o);
+  }
+  for (let h = 0; h <= 23; h++) {
+    const o = document.createElement("option");
+    o.value = h; o.textContent = String(h).padStart(2,"0");
+    hourEl.appendChild(o);
+  }
+  for (let m = 0; m <= 55; m += 5) {
+    const o = document.createElement("option");
+    o.value = m; o.textContent = String(m).padStart(2,"0");
+    minEl.appendChild(o);
+  }
+})();
 
 initApp();
 </script>
