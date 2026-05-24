@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Astrometrics Engine</title>
+    
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --text: #e0e0e0;
+            --dim: #555555;
+            --alert: #ff3b30;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--dim);
+            padding-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input {
+            background: transparent;
+            border: 1px solid var(--dim);
+            color: var(--text);
+            padding: 15px;
+            font-family: inherit;
+            font-size: 1rem;
+            text-align: center;
+            text-transform: uppercase;
+            outline: none;
+            border-radius: 0;
+            -webkit-appearance: none;
+        }
+
+        input:focus {
+            border-color: var(--text);
+        }
+
+        button {
+            background: var(--text);
+            color: var(--bg);
+            border: none;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: opacity 0.2s;
+            border-radius: 0;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        .hidden { 
+            display: none !important; 
+        }
+
+        #loading {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--dim);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink { 
+            50% { opacity: 0; } 
+        }
+        
+        .profile-info {
+            font-size: 0.85rem;
+            margin-bottom: 30px;
+            color: var(--dim);
+            line-height: 1.5;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .color-card {
+            border: 1px solid var(--dim);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-card.avoid {
+            border-color: var(--alert);
+        }
+
+        .color-swatch {
+            width: 100%;
+            height: 60px;
+            border-radius: 2px;
+        }
+
+        .color-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .color-label.avoid {
+            color: var(--alert);
+        }
+
+        .color-name {
+            font-size: 0.7rem;
+            color: var(--dim);
+        }
+
+        #errorMsg {
+            color: var(--alert);
+            text-align: center;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            height: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SYS.ASTRO_ENGINE</h1>
+        </div>
+
+        <div id="loginView" class="input-group">
+            <input type="text" id="secretCode" placeholder="ENTER ACCESS KEY" autocomplete="off" autocorrect="off" autocapitalize="characters">
+            <button onclick="authenticate()">INITIALIZE</button>
+            <div id="errorMsg"></div>
+        </div>
+
+        <div id="loadingView" class="hidden">
+            <div id="loading">> QUERYING EPHEMERIS DATA...</div>
+        </div>
+
+        <div id="resultsView" class="hidden">
+            <div class="profile-info" id="profileData">
+                </div>
+            <div class="color-grid">
+                <div class="color-card">
+                    <div class="color-label">WEALTH</div>
+                    <div class="color-swatch" id="colorWealth"></div>
+                    <div class="color-name" id="nameWealth">-</div>
+                </div>
+                <div class="color-card">
+                    <div class="color-label">WORK</div>
+                    <div class="color-swatch" id="colorWork"></div>
+                    <div class="color-name" id="nameWork">-</div>
+                </div>
+                <div class="color-card">
+                    <div class="color-label">CHARM</div>
+                    <div class="color-swatch" id="colorCharm"></div>
+                    <div class="color-name" id="nameCharm">-</div>
+                </div>
+                <div class="color-card avoid">
+                    <div class="color-label avoid">AVOID</div>
+                    <div class="color-swatch" id="colorBad"></div>
+                    <div class="color-name" id="nameBad">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your Google Apps Script Web App Endpoint
+        const API_URL = "https://script.google.com/macros/s/AKfycbwizA0KEdBEUElOQvWRjm0nf5EaUQ6XatIeBSUliTpqZiySOOCgFxBwUmY6D4iAz0T2/exec";
+
+        // Initialize LIFF (Replace with your actual LIFF ID when ready)
+        // liff.init({ liffId: "YOUR_LIFF_ID_HERE" });
+
+        async function authenticate() {
+            const codeInput = document.getElementById('secretCode').value.trim().toUpperCase();
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if (!codeInput) {
+                errorMsg.innerText = "ACCESS KEY REQUIRED";
+                return;
+            }
+
+            // UI Transitions
+            errorMsg.innerText = "";
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('loadingView').classList.remove('hidden');
+
+            try {
+                // Fetch to Google Apps Script
+                // Using text/plain to bypass complex CORS preflight issues on GAS
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "text/plain;charset=utf-8", 
+                    },
+                    body: JSON.stringify({ secretCode: codeInput })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                renderResults(data);
+
+            } catch (error) {
+                // Revert UI on failure
+                document.getElementById('loadingView').classList.add('hidden');
+                document.getElementById('loginView').classList.remove('hidden');
+                errorMsg.innerText = "ERR: " + error.message.toUpperCase();
+            }
+        }
+
+        function renderResults(data) {
+            document.getElementById('loadingView').classList.add('hidden');
+            document.getElementById('resultsView').classList.remove('hidden');
+
+            const dateStr = new Date().toLocaleDateString('en-GB');
+            
+            // Populate Header Data
+            document.getElementById('profileData').innerHTML = 
+                `SUBJECT: ${data.name.toUpperCase()}<br>` +
+                `ASCENDANT: ${data.ascendant.toUpperCase()}<br>` +
+                `DATE: ${dateStr}`;
+
+            // Apply Hex Colors and Names
+            applyColorBox('Wealth', data.colors.wealth);
+            applyColorBox('Work', data.colors.work);
+            applyColorBox('Charm', data.colors.charm);
+            applyColorBox('Bad', data.colors.bad_luck);
+        }
+
+        function applyColorBox(type, colorData) {
+            if(colorData) {
+                document.getElementById('color' + type).style.backgroundColor = colorData.hex;
+                document.getElementById('name' + type).innerText = colorData.name.toUpperCase();
+            }
+        }
+    </script>
+</body>
+</html>
