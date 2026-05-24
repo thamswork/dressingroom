@@ -446,6 +446,18 @@ async function authenticateCode() {
   hideError("errorMsg");
   setLoading("Verifying code…");
 
+  // Last-chance: re-fetch LINE profile if userId still missing
+  if (!lineUserId) {
+    try {
+      if (liff.isLoggedIn()) {
+        const profile = await liff.getProfile();
+        lineUserId      = profile.userId      || "";
+        lineDisplayName = profile.displayName || lineDisplayName;
+        document.getElementById("topMeta").textContent = lineDisplayName;
+      }
+    } catch(_) {}
+  }
+
   try {
     const res = await apiFetch({ action: "login", secretCode: code, lineUserId, lineName: lineDisplayName });
     if (res.error) throw new Error(res.error);
@@ -483,6 +495,17 @@ async function registerUser() {
 
   hideError("regErrorMsg");
   setLoading("Calculating your birth chart…");
+
+  // Last-chance: if lineUserId still empty, try fetching LINE profile again
+  if (!lineUserId) {
+    try {
+      if (liff.isLoggedIn()) {
+        const profile = await liff.getProfile();
+        lineUserId      = profile.userId   || "";
+        lineDisplayName = profile.displayName || lineDisplayName;
+      }
+    } catch(_) {}
+  }
 
   try {
     const res = await apiFetch({ action: "register", secretCode: currentActiveCode, lineUserId, lineName: lineDisplayName, dob, time });
