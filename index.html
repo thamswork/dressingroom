@@ -740,7 +740,7 @@ function renderDay(offset) {
     o.value = h; o.textContent = String(h).padStart(2,"0");
     hourEl.appendChild(o);
   }
-  for (let m = 0; m <= 55; m += 5) {
+  for (let m = 0; m <= 59; m++) {
     const o = document.createElement("option");
     o.value = m; o.textContent = String(m).padStart(2,"0");
     minEl.appendChild(o);
